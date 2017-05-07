@@ -1,11 +1,13 @@
 Package: resplsm
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Robust estimator for semi-parametric dynamic locationscale models
+Version: 0.0.0.9000
+Author: Edvinas Drevinskas
+Author@R: person("Edvinas", "Drevinskas", email = "e.drevinskas@gmail.com", 
+  role = c("aut", "cre"))
+Maintainer: Edvinas Drevinkskas <e.drevinskas@gmail.com>
+Description: Estimation of location scale parameters for stationary times series using robust semi-parametric method.
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 6.0.1
