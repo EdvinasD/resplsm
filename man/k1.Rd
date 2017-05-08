@@ -2,8 +2,7 @@
 % Please edit documentation in R/additional_functions.R
 \name{k1}
 \alias{k1}
-\title{k1
-\deqn{k_1=\left.\frac{1}{2v_0(y_{t-1})^2}\frac{\partial v_0(y_{t-1})^2}{\partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}}
+\title{k1}
 \usage{
 k1(theta, x, func)
 }
@@ -18,6 +17,6 @@ k1(theta, x, func)
 A value of score function.
 }
 \description{
-k1
-\deqn{k_1=\left.\frac{1}{2v_0(y_{t-1})^2}\frac{\partial v_0(y_{t-1})^2}{\partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}
+\deqn{k_1=\left.\frac{1}{2v_0(y_{t-1})^2}\frac{\partial v_0(y_{t-1})^2}{
+\partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}
 }

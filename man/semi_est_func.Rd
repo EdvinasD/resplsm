@@ -4,12 +4,10 @@
 \alias{semi_est_func}
 \title{Estimating function}
 \usage{
-semi_est_func(yt, ytlag, thetas)
+semi_est_func(yt, thetas)
 }
 \arguments{
 \item{yt}{A number.}
-
-\item{ytlag}{A number.}
 
 \item{thetas}{A vector of lengths 2.}
 }

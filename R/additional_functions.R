@@ -1,10 +1,9 @@
 #' Estimating function
 #'
 #' @param yt A number.
-#' @param ytlag A number.
 #' @param thetas A vector of lengths 2.
 #' @return A value of score function.
-semi_est_func <- function(yt,ytlag,thetas){
+semi_est_func <- function(yt,thetas){
   thetas[2] <- max(0,thetas[2]^2)
   -0.5*log(2*pi)-0.5*(log(thetas[2]))-0.5*(yt-thetas[1])^2/thetas[2]
 }
@@ -23,6 +22,7 @@ u_resids <- function(y,x,theta,func_mu,func_sigma){
 }
 
 #' k1
+#'
 #' \deqn{k_1=\left.\frac{1}{2v_0(y_{t-1})^2}\frac{\partial v_0(y_{t-1})^2}{
 #' \partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}
 #' @param x A number/vectors.
@@ -43,6 +43,14 @@ k2 <- function(theta,x,func){
   rbind((1/sqrt(func(x,theta))),0)
 }
 
+#' qn_function
+#'
+#' \eqn{q_n}
+#'
+#' @param u A number
+#' @param parameters A list with given parameters to function:
+#' \code{k1m, k2m, A, cb, tau, func_mu, func_sigma, x, theta0}
+#' @return value of \eqn{q_n} function
 qn_function <- function(u,parameters = list()){
   k1m <- parameters$k1m
   k2m <- parameters$k2m
@@ -61,6 +69,13 @@ qn_function <- function(u,parameters = list()){
   (-k1m+k2m*u+k1m*u^2)*cb/norm(A%*%(score_v-tau),type="2")
 }
 
+
+#'qn_function_z
+#'
+#' \eqn{\underline{q_n}}
+#' @inheritParams qn_function
+#' @param z A number
+#' @return value of q_n function
 qn_function_z <- function(z,u,parameters){
   qn_function(u+z,parameters)*exp(-.5*z^2)
 }
@@ -94,11 +109,22 @@ qn_function_den <- function(u,parameters = list()){
   cb/norm(A%*%(score_v-tau),type="2")
 }
 
-thetaOfX <- function(dat,X){
+#' Get \eqn{\theta(X)}
+#'
+#' @param dat data.frame which contains X and value of thate for that X
+#' @param X vector for which new values of \eqn{\theta(X)} should be returned
+#' @return Returns \eqn{\theta(X)}
+interpolate_theta <- function(dat,X){
   splined <- spline(x=dat$X,y=dat$value,xout = X,method = 'natural')$y
   return(splined)
 }
 
+#'qn_function_z_den
+#'
+#' \eqn{\underline{q_n}}
+#' @inheritParams qn_function
+#' @param z A number
+#' @return value of q_n function
 qn_function_z_den <- function(z,u,parameters){
   qn_function_den(u+z,parameters)*exp(-.5*z^2)
 }

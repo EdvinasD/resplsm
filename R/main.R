@@ -2,39 +2,37 @@
   packageStartupMessage("Thank you for using resplsm package")
 }
 
-espls <- function(Yt, Xt,St=Yt,s,initial.values, FUN = function(...){-semi_est_func(...)},
+#' Kernel M-Estimator for Location Scale model
+#'
+#' Estimates parameters for location scale model using Kernel M-Estimator using R
+#' optim function
+#'
+#' @param Yt parmeter of a function which is not to be optimized, usually \eqn{Y_t}
+#' @param St regresor parameter can be X's or lag(Y_t)
+#' @param initial.values initial value of optimisible parameter might be a vector
+#' @param print print during fitting
+#' @param s points at which function should be estimated
+#' @param bandwidth bandwith should be used
+#' @param int.of.par initial parameters
+#' @return Estimated location scale function at \code{s} points
+#' @export
+espls <- function(Yt, St, s, initial.values,
                        bandwidth=1.06*sqrt(var(St))*length(St)^(-1/5),
                        int.of.par = c(0,1),print=F){
-  # estimates parameters using newton-Raphson algorithm of semi-parametric
-  # Pseudo Liklyhood.
-  # input:
-  #   FUN           - function for which derivative needs to be calculated
-  #   Yt            - parmeter of a function which is not to be optimized,
-  #                   usually Y_t
-  #   Xt            - regresor parameter can be X's or lag(Y_t)
-  #   initial.value - initial value of optimisible parameter might be a vector
-  #   h             - limit parmerter
-  #   max.iter      - number of maximum iterations until convergens
-  #   delta         - stop if diferance less then it
-  #   print         - self explanatory
-  #   St            - at which points kernel should be applied, usually it is
-  #                   Y_t but it can be done on errors too, if we estimating
-  #                   ARCH processe or something similar
-  #  s              - points at which kernel should be estimated
 
 
+  FUN = function(...){-semi_est_func(...)}
   theta.n <- length(initial.values)
   theta.s <- data.frame()
   for(si in s){
     theta0 <- initial.values
-
 
     if(print){
       print(paste("iteration: ", si))
     }
     weights <-t(matrix(dnorm((St-si)/bandwidth)))
     FUN.to.optim <- function(x){
-      sum(weights*FUN(Yt,Xt,x))
+      sum(weights*FUN(Yt,x))
     }
     if(length(initial.values)==1){
       answer <- optimize(f=FUN.to.optim,interval = int.of.par)
@@ -51,17 +49,34 @@ espls <- function(Yt, Xt,St=Yt,s,initial.values, FUN = function(...){-semi_est_f
 }
 
 
-
-respls <- function(theta,Y,X,
-                   c_bound,iterations=5,n_par=length(theta),N=length(Y),bindwidths){
+#' Robust Kernel M-Estimator for Location Scale model
+#'
+#' Description
+#'
+#' @param Y parmeter of a function which is not to be optimized, usually \eqn{Y_t}
+#' @param X regresor parameter can be X's or lag(Y_t)
+#' @param theta initial value of theta, document later
+#' @param c_bound bounding constant
+#' @param iterations number of iterantions
+#' @param bindwidths bindwidths should be used
+#' @return Estimated location theta Robust
+#' @export
+respls <- function(theta,
+                   Y,X,
+                   c_bound,
+                   iterations=5,
+                   bindwidths){
   ################################################################################
   ####                 STEP 1 initialize depending on model                   ####
   ################################################################################
+  n_par=length(theta)
+  N=length(Y)
+
   func_s=function(x,theta0){
-    thetaOfX(theta0[[2]],x)^2
+    interpolate_theta(theta0[[2]],x)^2
   }
   func_m=function(x,theta0){
-    thetaOfX(theta0[[1]],x)
+    interpolate_theta(theta0[[1]],x)
   }
   # inintial tau
   tau_0=matrix(0,nrow=n_par,ncol=length(Y))
@@ -202,14 +217,35 @@ respls <- function(theta,Y,X,
   return(Thetass)
 }
 
-rls <- function(theta,Y,X,c_bound,
-                                func_s,d_func_s,func_m,d_func_m,
-                                iterations=5,n_par=length(theta),
-                                N=length(Y)){
+
+
+
+#' Robust M-Estimator for Location Scale model
+#'
+#' Description
+#'
+#' @param Y parmeter of a function which is not to be optimized, usually \eqn{Y_t}
+#' @param X regresor parameter can be X's or lag(Y_t)
+#' @param theta initial value of theta, document later
+#' @param c_bound bounding constant
+#' @param func_s scale function
+#' @param d_func_s derivative of scale function
+#' @param func_m location function
+#' @param d_func_m derivative of location function
+#' @param iterations number of iterantions
+#' @return Estimated location theta Robust
+#' @export
+rls <- function(theta,
+                Y,X,
+                c_bound,
+                func_s,d_func_s,
+                func_m,d_func_m,
+                iterations=5){
   ################################################################################
   ####                 STEP 1 initialize depending on model                   ####
   ################################################################################
-
+  n_par=length(theta)
+  N=length(Y)
   # inintial tau
   tau_0=matrix(0,nrow=n_par,ncol=length(Y))
 
