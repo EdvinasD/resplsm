@@ -35,6 +35,7 @@ k1 <- function(theta,x,func){
 
 #' k2
 #'
+#' \deqn{k_2=\left.\frac{1}{v_0(y_{t-1})}\frac{\partial m_0(y_{t-1})^2}{\partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}
 #' @param x A number/vectors.
 #' @param theta A data.frame
 #' @param func scale function
@@ -45,11 +46,12 @@ k2 <- function(theta,x,func){
 
 #' qn_function
 #'
-#' \eqn{q_n}
+#' \deqn{q_n(u):=(-k_{1}+k_{2}u+k_{1}u^2)\frac{c}{\|A(s(v;\theta_0)-\tau^{(0)})\|}}
 #'
 #' @param u A number
 #' @param parameters A list with given parameters to function:
-#' \code{k1m, k2m, A, cb, tau, func_mu, func_sigma, x, theta0}
+#' \code{k1m}, \code{k2m}, \code{A}, \code{cb}, \code{tau}, \code{func_mu},
+#' \code{func_sigma}, \code{x}, \code{theta0}
 #' @return value of \eqn{q_n} function
 qn_function <- function(u,parameters = list()){
   k1m <- parameters$k1m
@@ -69,28 +71,14 @@ qn_function <- function(u,parameters = list()){
   (-k1m+k2m*u+k1m*u^2)*cb/norm(A%*%(score_v-tau),type="2")
 }
 
-
-#'qn_function_z
+#' qn_function_den
 #'
-#' \eqn{\underline{q_n}}
+#' \deqn{q^{den}_n(u):=\frac{c}{\|A(s(v;\theta_0)-\tau^{(0)})\|}}
+#' Part of \eqn{\tau} calculation
+#'
+#' @param u A number
 #' @inheritParams qn_function
-#' @param z A number
-#' @return value of q_n function
-qn_function_z <- function(z,u,parameters){
-  qn_function(u+z,parameters)*exp(-.5*z^2)
-}
-
-
-Laplace_approx2 <- function(u,parameters,h=0.0001){
-  q0 <- qn_function_z(0,u,parameters)
-  q0ph <- qn_function_z(0+h,u,parameters)
-  q0mh <- qn_function_z(0-h,u,parameters)
-  q1 <-(q0ph-q0mh)/(2*h)
-  q2 <-(q0ph-2*q0+q0mh)/(h^2)
-  Laporxx <- q0+q1/u+q2/(u^2)
-  return(Laporxx)
-}
-
+#' @return value of \eqn{q_n} function
 qn_function_den <- function(u,parameters = list()){
   k1m <- parameters$k1m
   k2m <- parameters$k2m
@@ -109,6 +97,39 @@ qn_function_den <- function(u,parameters = list()){
   cb/norm(A%*%(score_v-tau),type="2")
 }
 
+#'qn_function_z
+#'
+#' \eqn{q_n(z):=q_n(u+z)\exp(-.5z^2)}
+#'
+#' @inheritParams qn_function
+#' @param z A number
+#' @return value of q_n function
+qn_function_z <- function(z,u,parameters){
+  qn_function(u+z,parameters)*exp(-.5*z^2)
+}
+
+#'qn_function_z_den
+#'
+#' \eqn{q^{den}_n(z):=q^{den}_n(u+z)\exp(-.5z^2)}
+#' @inheritParams qn_function
+#' @param z A number
+#' @return value of q_n function
+qn_function_z_den <- function(z,u,parameters){
+  qn_function_den(u+z,parameters)*exp(-.5*z^2)
+}
+
+Laplace_approx <- function(u,parameters,h=0.0001){
+  q0 <- qn_function_z(0,u,parameters)
+  q0ph <- qn_function_z(0+h,u,parameters)
+  q0mh <- qn_function_z(0-h,u,parameters)
+  q1 <-(q0ph-q0mh)/(2*h)
+  q2 <-(q0ph-2*q0+q0mh)/(h^2)
+  Laporxx <- q0+q1/u+q2/(u^2)
+  return(Laporxx)
+}
+
+
+
 #' Get \eqn{\theta(X)}
 #'
 #' @param dat data.frame which contains X and value of thate for that X
@@ -119,17 +140,9 @@ interpolate_theta <- function(dat,X){
   return(splined)
 }
 
-#'qn_function_z_den
-#'
-#' \eqn{\underline{q_n}}
-#' @inheritParams qn_function
-#' @param z A number
-#' @return value of q_n function
-qn_function_z_den <- function(z,u,parameters){
-  qn_function_den(u+z,parameters)*exp(-.5*z^2)
-}
 
-Laplace_approx2_den <- function(u,parameters,h=0.0001){
+
+Laplace_approx_den <- function(u,parameters,h=0.0001){
   q0 <- qn_function_z_den(0,u,parameters)
   q0ph <- qn_function_z_den(0+h,u,parameters)
   q0mh <- qn_function_z_den(0-h,u,parameters)
@@ -184,7 +197,7 @@ robust_est_function <- function(theta,params){
   cb=params$cb
   k1m = params$k1
   k2m = params$k2
-  k1_0 <- k1m(theta=theta,x=X,func=func_sigma,d_func_sigma)
+  k1_0 <- k1m(theta=theta,x=X,func=func_sigma,d_func=d_func_sigma)
   k2_0 <- k2m(theta=theta,x=X,func=func_sigma,d_func=d_func_mu)
 
 
@@ -204,7 +217,7 @@ func_to_minimize <- function(theta,params){
 tau_for_2_roots <- function(qn_params,i_root_dw,i_root_up){
   # calculating tau_num
   int_u_up_inf <- 1/sqrt(2*pi)*exp(-.5*i_root_up^2)/i_root_up*
-    Laplace_approx2(i_root_up,qn_params,h=0.0001)
+    Laplace_approx(i_root_up,qn_params,h=0.0001)
   n_u <- list(dnorm_up=dnorm(i_root_up),
               dnorm_dw=dnorm(i_root_dw),
               pnorm_up=pnorm(i_root_up),
@@ -218,17 +231,17 @@ tau_for_2_roots <- function(qn_params,i_root_dw,i_root_up){
     qn_params$k1m*M2m
 
   int_inf_u_dw <- -1/sqrt(2*pi)*exp(-.5*i_root_dw^2)/i_root_dw*
-    Laplace_approx2(i_root_dw,qn_params,h=0.0001)
+    Laplace_approx(i_root_dw,qn_params,h=0.0001)
   tau_num=int_u_up_inf+int_u_down_u_up+int_inf_u_dw
 
   # calculating tau_den
 
   int_u_up_inf <- 1/sqrt(2*pi)*exp(-.5*i_root_up^2)/i_root_up*
-    Laplace_approx2_den(i_root_up,qn_params,h=0.0001)
+    Laplace_approx_den(i_root_up,qn_params,h=0.0001)
   int_u_down_u_up <- n_u$pnorm_up-n_u$pnorm_dw
 
   int_inf_u_dw <- -1/sqrt(2*pi)*exp(-.5*i_root_dw^2)/i_root_dw*
-    Laplace_approx2_den(i_root_dw,qn_params,h=0.0001)
+    Laplace_approx_den(i_root_dw,qn_params,h=0.0001)
   tau_den=int_u_up_inf+int_u_down_u_up+int_inf_u_dw
 
   tau=tau_num/tau_den
@@ -246,7 +259,7 @@ tau_for_4_roots_approximation <- function(qn_params,u_roots_i){
 
   # calculating tau_num
   int_u_up2_inf <- 1/sqrt(2*pi)*exp(-.5*i_root_up2^2)/i_root_up2*
-    Laplace_approx2(i_root_up2,qn_params,h=0.001)
+    Laplace_approx(i_root_up2,qn_params,h=0.001)
 
   n_u_up <- list(dnorm_up=dnorm(i_root_up2),
                  dnorm_dw=dnorm(i_root_up1),
@@ -274,7 +287,7 @@ tau_for_4_roots_approximation <- function(qn_params,u_roots_i){
 
 
   int_inf_u_dw2 <- -1/sqrt(2*pi)*exp(-.5*i_root_dw2^2)/i_root_dw2*
-    Laplace_approx2(i_root_dw2,qn_params,h=0.0001)
+    Laplace_approx(i_root_dw2,qn_params,h=0.0001)
 
   # qn_function1 <- function(u,parameters){qn_function(u,parameters)[1]*dnorm(u)}
   # qn_function2 <- function(u,parameters){qn_function(u,parameters)[2]*dnorm(u)}
@@ -291,7 +304,7 @@ tau_for_4_roots_approximation <- function(qn_params,u_roots_i){
   # calculating tau_den
 
   int_u_up2_inf <- 1/sqrt(2*pi)*exp(-.5*i_root_up2^2)/i_root_up2*
-    Laplace_approx2_den(i_root_up2,qn_params,h=0.0001)
+    Laplace_approx_den(i_root_up2,qn_params,h=0.0001)
 
   int_u_up1_u_up2 <- n_u_up$pnorm_up-n_u_up$pnorm_dw
 
@@ -300,7 +313,7 @@ tau_for_4_roots_approximation <- function(qn_params,u_roots_i){
   int_u_dw2_u_dw1 <- n_u_dw$pnorm_up-n_u_dw$pnorm_dw
 
   int_inf_u_dw2 <- -1/sqrt(2*pi)*exp(-.5*i_root_dw2^2)/i_root_dw2*
-    Laplace_approx2_den(i_root_dw2,qn_params,h=0.0001)
+    Laplace_approx_den(i_root_dw2,qn_params,h=0.0001)
   tau_den=int_inf_u_dw2+int_u_dw2_u_dw1+
     int_u_dw1_u_up1+
     int_u_up1_u_up2+int_u_up2_inf

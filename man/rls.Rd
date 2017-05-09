@@ -4,7 +4,8 @@
 \alias{rls}
 \title{Robust M-Estimator for Location Scale model}
 \usage{
-rls(theta, Y, X, c_bound, func_s, d_func_s, func_m, d_func_m, iterations = 5)
+rls(theta, Y, X, c_bound, func_s, d_func_s, func_m, d_func_m, iterations = 5,
+  return.all = F)
 }
 \arguments{
 \item{theta}{initial value of theta, document later}
@@ -24,6 +25,8 @@ rls(theta, Y, X, c_bound, func_s, d_func_s, func_m, d_func_m, iterations = 5)
 \item{d_func_m}{derivative of location function}
 
 \item{iterations}{number of iterantions}
+
+\item{return.all}{if TRUE returns list of all \eqn{\theta^{(j)}}}
 }
 \value{
 Estimated location theta Robust

@@ -59,13 +59,15 @@ espls <- function(Yt, St, s, initial.values,
 #' @param c_bound bounding constant
 #' @param iterations number of iterantions
 #' @param bindwidths bindwidths should be used
+#' @param return.all if TRUE returns list of all \eqn{\theta^{(j)}}
 #' @return Estimated location theta Robust
 #' @export
 respls <- function(theta,
                    Y,X,
                    c_bound,
                    iterations=5,
-                   bindwidths){
+                   bindwidths,
+                   return.all=F){
   ################################################################################
   ####                 STEP 1 initialize depending on model                   ####
   ################################################################################
@@ -214,7 +216,12 @@ respls <- function(theta,
     A_0TA_0=ATA
     A_0=new_A
   }
-  return(Thetass)
+  if(return.all){
+    return(Thetass)
+  }else{
+    return(Thetass[[length(Thetass)]])
+  }
+
 }
 
 
@@ -233,6 +240,7 @@ respls <- function(theta,
 #' @param func_m location function
 #' @param d_func_m derivative of location function
 #' @param iterations number of iterantions
+#' @param return.all if TRUE returns list of all \eqn{\theta^{(j)}}
 #' @return Estimated location theta Robust
 #' @export
 rls <- function(theta,
@@ -240,7 +248,8 @@ rls <- function(theta,
                 c_bound,
                 func_s,d_func_s,
                 func_m,d_func_m,
-                iterations=5){
+                iterations=5,
+                return.all=F){
   ################################################################################
   ####                 STEP 1 initialize depending on model                   ####
   ################################################################################
@@ -370,8 +379,8 @@ rls <- function(theta,
                 Y=Y,
                 X=X,
                 cb=c_bound,
-                k1=k1,
-                k2=k2)
+                k1=rls_k1,
+                k2=rls_k2)
 
 
     new_theta=optim(par=theta,func_to_minimize,params=params)$par
@@ -382,5 +391,38 @@ rls <- function(theta,
     A_0=new_A
 
   }
-  return(Thetass)
+
+  if(return.all){
+    return(Thetass)
+  }else{
+    return(Thetass[[length(Thetass)]])
+  }
 }
+
+#' Pseudo Liklyhood Estimator for Location Scale model
+#'
+#' Description
+#'
+#' @param Y parmeter of a function which is not to be optimized, usually \eqn{Y_t}
+#' @param X regresor parameter can be X's or lag(Y_t)
+#' @param initial.theta initial value of theta, A vector
+#' @param func_s scale function
+#' @param func_m location function
+#' @return Estimated location theta Robust
+#' @export
+pls <- function(initial.theta,
+                Y,X,
+                func_s,
+                func_m){
+
+  log_likelihood <- function(x, p){
+    -sum(log(1 / sqrt(2 * pi * func_s(p$X, x) )*
+             exp( -( p$Y - func_m(p$X, x) )^2 / (2 * func_s(p$X,x) ) )
+             )
+         )
+  }
+  p <- list(Y = Y, X = X, func_s = func_s, func_m = func_m)
+  theta.est <- as.matrix(optim(par = initial.theta,fn=log_likelihood,p=p)$par)
+  return(theta.est)
+}
+

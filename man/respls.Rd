@@ -4,7 +4,7 @@
 \alias{respls}
 \title{Robust Kernel M-Estimator for Location Scale model}
 \usage{
-respls(theta, Y, X, c_bound, iterations = 5, bindwidths)
+respls(theta, Y, X, c_bound, iterations = 5, bindwidths, return.all = F)
 }
 \arguments{
 \item{theta}{initial value of theta, document later}
@@ -18,6 +18,8 @@ respls(theta, Y, X, c_bound, iterations = 5, bindwidths)
 \item{iterations}{number of iterantions}
 
 \item{bindwidths}{bindwidths should be used}
+
+\item{return.all}{if TRUE returns list of all \eqn{\theta^{(j)}}}
 }
 \value{
 Estimated location theta Robust

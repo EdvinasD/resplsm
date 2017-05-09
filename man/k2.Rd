@@ -17,5 +17,5 @@ k2(theta, x, func)
 A value of score function.
 }
 \description{
-k2
+\deqn{k_2=\left.\frac{1}{v_0(y_{t-1})}\frac{\partial m_0(y_{t-1})^2}{\partial\theta(y_{t-1})}\right|_{\theta=\theta_0}}
 }

@@ -12,11 +12,12 @@ qn_function_z(z, u, parameters)
 \item{u}{A number}
 
 \item{parameters}{A list with given parameters to function:
-\code{k1m, k2m, A, cb, tau, func_mu, func_sigma, x, theta0}}
+\code{k1m}, \code{k2m}, \code{A}, \code{cb}, \code{tau}, \code{func_mu},
+\code{func_sigma}, \code{x}, \code{theta0}}
 }
 \value{
 value of q_n function
 }
 \description{
-\eqn{\underline{q_n}}
+\eqn{q_n(z):=q_n(u+z)\exp(-.5z^2)}
 }

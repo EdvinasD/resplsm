@@ -3,8 +3,6 @@ Type: Package
 Title: Robust estimator for semi-parametric dynamic locationscale models
 Version: 0.0.0.9000
 Author: Edvinas Drevinskas
-Author@R: person("Edvinas", "Drevinskas", email = "e.drevinskas@gmail.com", 
-  role = c("aut", "cre"))
 Maintainer: Edvinas Drevinkskas <e.drevinskas@gmail.com>
 Description: Estimation of location scale parameters for stationary times series using robust semi-parametric method.
 License: GPL-3

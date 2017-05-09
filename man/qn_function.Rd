@@ -10,11 +10,12 @@ qn_function(u, parameters = list())
 \item{u}{A number}
 
 \item{parameters}{A list with given parameters to function:
-\code{k1m, k2m, A, cb, tau, func_mu, func_sigma, x, theta0}}
+\code{k1m}, \code{k2m}, \code{A}, \code{cb}, \code{tau}, \code{func_mu},
+\code{func_sigma}, \code{x}, \code{theta0}}
 }
 \value{
 value of \eqn{q_n} function
 }
 \description{
-\eqn{q_n}
+\deqn{q_n(u):=(-k_{1}+k_{2}u+k_{1}u^2)\frac{c}{\|A(s(v;\theta_0)-\tau^{(0)})\|}}
 }
