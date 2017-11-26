@@ -118,6 +118,13 @@ qn_function_z_den <- function(z,u,parameters){
   qn_function_den(u+z,parameters)*exp(-.5*z^2)
 }
 
+#'Laplace_approx
+#'
+#' \eqn{\mathcal{L}(\overline{\mathbf{q}_n},\overline{u})}
+#' @inheritParams qn_function
+#' @param u A number
+#' @param h delta for numerical derivative
+#' @return value of q_n function
 Laplace_approx <- function(u,parameters,h=0.0001){
   q0 <- qn_function_z(0,u,parameters)
   q0ph <- qn_function_z(0+h,u,parameters)
@@ -190,6 +197,9 @@ robust_est_function <- function(theta,params){
   func_sigma=params$func_sigma
   d_func_mu=params$d_func_mu
   d_func_sigma=params$d_func_sigma
+
+
+
   tau_vector=params$tau_vector
   A_0=params$A_matrix
   Y=params$Y
@@ -197,6 +207,10 @@ robust_est_function <- function(theta,params){
   cb=params$cb
   k1m = params$k1
   k2m = params$k2
+
+  if(is.na(func_mu(X,theta)) | is.na(func_sigma(X,theta))){
+    return(NA)
+  }else{
   k1_0 <- k1m(theta=theta,x=X,func=func_sigma,d_func=d_func_sigma)
   k2_0 <- k2m(theta=theta,x=X,func=func_sigma,d_func=d_func_mu)
 
@@ -208,6 +222,7 @@ robust_est_function <- function(theta,params){
   resultigvalues <- rowSums(apply(t(score_tau),2,function(x){
     x*min(1,cb/norm(A_0%*%x,type="2"))}))
   return(resultigvalues)
+  }
 }
 
 func_to_minimize <- function(theta,params){

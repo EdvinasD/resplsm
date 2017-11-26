@@ -19,8 +19,6 @@
 espls <- function(Yt, St, s, initial.values,
                        bandwidth=1.06*sqrt(var(St))*length(St)^(-1/5),
                        int.of.par = c(0,1),print=F){
-
-
   FUN = function(...){-semi_est_func(...)}
   theta.n <- length(initial.values)
   theta.s <- data.frame()
@@ -45,7 +43,10 @@ espls <- function(Yt, St, s, initial.values,
 
     theta.s <- rbind(theta.s,t(theta0))
   }
-  return(theta.s)
+
+  output <- list(m=data.frame(X=s, value=theta.s[,1]),
+                 v=data.frame(X=s, value=theta.s[,2]))
+  return(output)
 }
 
 
@@ -193,7 +194,7 @@ respls <- function(theta,
                 cb=c_bound,
                 bindwidths=bindwidths)
 
-    # ToMinimizeforRobust(theta,params)
+
     if(ij==iterations){
       tolerance=0.01
     }else{
@@ -205,7 +206,8 @@ respls <- function(theta,
     for(Si in 1:length(theta[[1]]$X)){
       params$S <- theta[[1]]$X[Si]
       theta.local <- as.matrix(unlist(lapply(theta,function(x)x[Si,"value"])))
-      new_theta_value=optim(par=theta.local,sp_func_to_minimize,params=params,control=list(abstol=tolerance))$par
+
+      new_theta_value=optim(par=theta.local,sp_func_to_minimize,control=list(abstol=tolerance),params=params)$par
       for(hh in 1:n_par){
         new_theta[[hh]][Si,"value"] <- new_theta_value[hh,]
       }
@@ -241,6 +243,7 @@ respls <- function(theta,
 #' @param d_func_m derivative of location function
 #' @param iterations number of iterantions
 #' @param return.all if TRUE returns list of all \eqn{\theta^{(j)}}
+#' @param tolerence tolerance level
 #' @return Estimated location theta Robust
 #' @export
 rls <- function(theta,
@@ -249,10 +252,12 @@ rls <- function(theta,
                 func_s,d_func_s,
                 func_m,d_func_m,
                 iterations=5,
-                return.all=F){
+                return.all=F,
+                tolerance=0){
   ################################################################################
   ####                 STEP 1 initialize depending on model                   ####
   ################################################################################
+
   n_par=length(theta)
   N=length(Y)
   # inintial tau
@@ -370,6 +375,8 @@ rls <- function(theta,
     ATA <- t(new_A)%*%new_A
     # ATArep <- ATA[,rep(c(1:n_par),length(Y))]
 
+
+
     params=list(func_mu=func_m,
                 func_sigma=func_s,
                 d_func_mu=d_func_m,
@@ -382,8 +389,13 @@ rls <- function(theta,
                 k1=rls_k1,
                 k2=rls_k2)
 
+    if( tolerance!=0 ){
+      new_theta=optim(par=theta,func_to_minimize,params=params,control=list(abstol=tolerance))$par
+    }else{
+      new_theta=optim(par=theta,func_to_minimize,params=params)$par
+    }
 
-    new_theta=optim(par=theta,func_to_minimize,params=params)$par
+
     Thetass[[ij]]=new_theta
     theta=new_theta
     tau_0=new_tau
