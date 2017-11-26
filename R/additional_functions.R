@@ -120,11 +120,11 @@ qn_function_z_den <- function(z,u,parameters){
 
 #'Laplace_approx
 #'
-#' \eqn{\mathcal{L}(\overline{\mathbf{q}_n},\overline{u})}
+#' \eqn{\mathcal{L}(\overline{\mathbf{q}_n},\overline{u})} for the \eqn{\tau} numerator
 #' @inheritParams qn_function
 #' @param u A number
-#' @param h delta for numerical derivative
-#' @return value of q_n function
+#' @param h numerical derivative parameter
+#' @return value of Laplace_approx function
 Laplace_approx <- function(u,parameters,h=0.0001){
   q0 <- qn_function_z(0,u,parameters)
   q0ph <- qn_function_z(0+h,u,parameters)
@@ -148,7 +148,13 @@ interpolate_theta <- function(dat,X){
 }
 
 
-
+#'Laplace_approx_den
+#'
+#' \eqn{\mathcal{L}(\overline{\mathbf{q}_n},\overline{u})} for the \eqn{\tau} denominator
+#' @inheritParams qn_function
+#' @param u A number
+#' @param h numerical derivative parameter
+#' @return value of Laplace_approx_den function
 Laplace_approx_den <- function(u,parameters,h=0.0001){
   q0 <- qn_function_z_den(0,u,parameters)
   q0ph <- qn_function_z_den(0+h,u,parameters)
